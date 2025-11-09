@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mehul's Text to Speech</title>
+
+  <!-- App Icon -->
+  <link rel="apple-touch-icon" href="images.jpeg">
+  <link rel="icon" type="image/png" href="images.jpeg">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+      background: linear-gradient(180deg, #ffffff, #e6f0ff);
+    }
+    h2 {
+      color: #333;
+    }
+    textarea {
+      width: 80%;
+      max-width: 400px;
+      height: 120px;
+      border-radius: 10px;
+      border: 1px solid #aaa;
+      padding: 10px;
+      resize: none;
+      font-size: 16px;
+    }
+    select, button {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: none;
+      margin: 10px;
+      font-size: 16px;
+    }
+    button {
+      cursor: pointer;
+      color: #fff;
+    }
+    #speakBtn {
+      background-color: #4CAF50;
+    }
+    #stopBtn {
+      background-color: #ff4d4d;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>🗣️ Mehul's Text to Speech App</h2>
+
+  <textarea id="text" placeholder="Type or paste text here..."></textarea><br>
+
+  <label for="language"><b>Select Language:</b></label><br>
+  <select id="language">
+    <option value="en-US">English</option>
+    <option value="hi-IN">Hindi</option>
+    <option value="gu-IN">Gujarati</option>
+  </select><br>
+
+  <button id="speakBtn" onclick="speak()">▶️ Speak</button>
+  <button id="stopBtn" onclick="stopSpeech()">⏹ Stop</button>
+
+  <script>
+    let utterance;
+
+    function speak() {
+      const text = document.getElementById("text").value.trim();
+      const lang = document.getElementById("language").value;
+
+      if (!text) return alert("Please enter some text first!");
+
+      // Cancel any ongoing speech before starting new one
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+
+      utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      utterance.rate = 1;
+
+      speechSynthesis.speak(utterance);
+    }
+
+    function stopSpeech() {
+      speechSynthesis.cancel();
+    }
+  </script>
+</body>
+</html>
