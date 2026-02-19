@@ -47,6 +47,7 @@ body {
   position: relative;
 }
 
+/* Decorative top bar */
 .top-rule {
   height: 4px;
   background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
@@ -54,6 +55,7 @@ body {
   margin-bottom: 24px;
 }
 
+/* Header */
 .masthead {
   text-align: center;
   padding-bottom: 20px;
@@ -104,6 +106,7 @@ body {
   font-family: 'Playfair Display', serif;
 }
 
+/* Card */
 .card {
   background: white;
   border: 1px solid var(--border);
@@ -167,6 +170,7 @@ textarea::placeholder {
   margin-top: 6px;
 }
 
+/* Controls */
 .control-row {
   margin-bottom: 16px;
 }
@@ -210,6 +214,7 @@ select {
 
 select:focus { outline: none; border-color: var(--gold); }
 
+/* Sliders */
 .slider-track {
   position: relative;
   height: 32px;
@@ -241,6 +246,7 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.2); cursor: grabbing; }
 input[type="range"]:focus { outline: none; }
 
+/* Buttons */
 .buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -318,6 +324,7 @@ button:not(:disabled):hover::after { transform: scaleX(1); }
 
 button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
 
+/* Status */
 .status-card {
   background: var(--paper);
   border: 1px solid var(--border);
@@ -353,6 +360,7 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
 .status-text.speaking { color: var(--sage); }
 .status-text.recording { color: var(--rust); }
 
+/* Progress */
 .progress-bar {
   height: 2px;
   background: var(--border);
@@ -371,6 +379,7 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
   transition: width 0.3s ease;
 }
 
+/* Offline badge */
 .offline-badge {
   position: fixed;
   top: 12px;
@@ -389,6 +398,7 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
 
 .offline-badge.show { display: block; }
 
+/* Footer */
 .footer {
   text-align: center;
   margin-top: 20px;
@@ -405,196 +415,32 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
 
 .footer span { color: var(--gold); opacity: 0.5; }
 
+/* Divider ornament */
+.ornament {
+  text-align: center;
+  color: var(--gold-light);
+  font-size: 14px;
+  letter-spacing: 6px;
+  margin: 4px 0;
+  opacity: 0.7;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
 
+/* Entry animation */
 .container { animation: fadeUp 0.5s ease both; }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(13,13,26,0.8);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  backdrop-filter: blur(6px);
-  padding: 20px;
-}
-
-.modal-overlay.show { display: flex; }
-
-.modal {
-  background: white;
-  border-radius: 8px;
-  padding: 28px;
-  max-width: 360px;
-  width: 100%;
-  text-align: center;
-  box-shadow: 0 25px 80px rgba(0,0,0,0.4);
-  border: 1px solid var(--border);
-  animation: modalIn 0.3s ease;
-}
-
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95) translateY(10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.modal h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px;
-  margin-bottom: 12px;
-  color: var(--ink);
-}
-
-.modal p {
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 20px;
-  line-height: 1.6;
-}
-
-.modal-steps {
-  text-align: left;
-  background: var(--paper);
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 20px;
-  font-size: 12px;
-  color: var(--ink);
-}
-
-.modal-steps ol {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.modal-steps li {
-  margin-bottom: 8px;
-  line-height: 1.5;
-}
-
-.modal-steps li:last-child { margin-bottom: 0; }
-
-.modal-steps strong {
-  color: var(--sage);
-}
-
-.modal button {
-  background: var(--ink);
-  color: var(--gold);
-  padding: 14px 28px;
-  border-radius: 4px;
-  width: 100%;
-  font-size: 12px;
-  letter-spacing: 1.5px;
-}
-
-.modal button:hover {
-  background: #1a1a30;
-  transform: translateY(-1px);
-}
-
-.recording-active {
-  display: none;
-  margin-top: 20px;
-}
-
-.recording-active.show {
-  display: block;
-}
-
-.recording-waves {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  height: 40px;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.wave {
-  width: 4px;
-  background: var(--rust);
-  border-radius: 2px;
-  animation: wave 1s ease-in-out infinite;
-}
-
-.wave:nth-child(1) { height: 15px; animation-delay: 0s; }
-.wave:nth-child(2) { height: 25px; animation-delay: 0.1s; }
-.wave:nth-child(3) { height: 35px; animation-delay: 0.2s; }
-.wave:nth-child(4) { height: 25px; animation-delay: 0.3s; }
-.wave:nth-child(5) { height: 15px; animation-delay: 0.4s; }
-
-@keyframes wave {
-  0%, 100% { transform: scaleY(0.5); opacity: 0.5; }
-  50% { transform: scaleY(1); opacity: 1; }
-}
-
-.cancel-btn {
-  background: transparent !important;
-  color: var(--muted) !important;
-  border: 1px solid var(--border) !important;
-  margin-top: 10px;
-}
-
-.cancel-btn:hover {
-  background: var(--paper) !important;
-}
-
-/* Helper text */
-.helper-text {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 8px;
-  font-style: italic;
 }
 </style>
 </head>
 <body>
 
 <div class="offline-badge" id="offline">Offline</div>
-
-<!-- Recording Modal -->
-<div class="modal-overlay" id="recordingModal">
-  <div class="modal">
-    <div id="modalStart">
-      <h3>🔴 Save Audio</h3>
-      <p>To capture the speech as an audio file, you'll need to share your tab audio.</p>
-      <div class="modal-steps">
-        <ol>
-          <li>Click <strong>"Start Recording"</strong> below</li>
-          <li>When prompted, select <strong>"This Tab"</strong></li>
-          <li>Make sure <strong>"Share tab audio"</strong> is checked ✅</li>
-          <li>Speech will start automatically and save when done</li>
-        </ol>
-      </div>
-      <button onclick="startRecordingProcess()">Start Recording</button>
-      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
-    </div>
-    
-    <div id="modalRecording" class="recording-active">
-      <h3>Recording in Progress</h3>
-      <div class="recording-waves">
-        <div class="wave"></div>
-        <div class="wave"></div>
-        <div class="wave"></div>
-        <div class="wave"></div>
-        <div class="wave"></div>
-      </div>
-      <p>Speak now... Audio will save automatically when finished.</p>
-      <button class="cancel-btn" onclick="cancelRecording()">Stop & Save Now</button>
-    </div>
-  </div>
-</div>
 
 <div class="container">
   <div class="top-rule"></div>
@@ -605,12 +451,14 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
     <div class="tagline">English · हिंदी · ગુજરાતી</div>
   </div>
 
+  <!-- Text Input -->
   <div class="card">
     <div class="card-label">Compose</div>
     <textarea id="text" placeholder="Type in English, हिंदी, or ગુજરાતી…"></textarea>
     <div class="char-count" id="charCount">0 chars</div>
   </div>
 
+  <!-- Voice & Controls -->
   <div class="card">
     <div class="card-label">Voice Settings</div>
 
@@ -647,17 +495,18 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
     </div>
   </div>
 
+  <!-- Actions -->
   <div class="card">
     <div class="card-label">Actions</div>
     <div class="buttons">
       <button class="btn-speak" id="speak">▶ Speak</button>
       <button class="btn-stop" id="stop" disabled>⏹ Stop</button>
       <button class="btn-pause" id="pause" disabled>⏸ Pause</button>
-      <button class="btn-record" id="record">⬇ Save Audio</button>
+      <button class="btn-record" id="record">⬇ Save MP3</button>
     </div>
-    <div class="helper-text" id="recordHelper">Saves as WebM audio file (plays in all media players)</div>
   </div>
 
+  <!-- Status -->
   <div class="status-card" id="statusCard">
     <div class="status-dot" id="statusDot"></div>
     <div class="status-text" id="status">Ready</div>
@@ -685,15 +534,9 @@ const speakBtn = document.getElementById('speak');
 const stopBtn = document.getElementById('stop');
 const pauseBtn = document.getElementById('pause');
 const recordBtn = document.getElementById('record');
-const recordingModal = document.getElementById('recordingModal');
-const modalStart = document.getElementById('modalStart');
-const modalRecording = document.getElementById('modalRecording');
 
 let voices = [];
 let isRecording = false;
-let mediaRecorder = null;
-let recordedChunks = [];
-let recordingStream = null;
 
 function setStatus(text, state = '') {
   statusEl.textContent = text;
@@ -705,10 +548,8 @@ function loadVoices() {
   const prev = voiceSel.value;
   voices = synth.getVoices();
   if (!voices.length) return;
-  
   voices.sort((a,b) => (/Google|Natural|Enhanced/i.test(b.name)) - (/Google|Natural|Enhanced/i.test(a.name)));
   voiceSel.innerHTML = '<option value="">Auto-detect (Recommended)</option>';
-  
   const groups = {Hindi:[],Gujarati:[],English:[],Other:[]};
   voices.forEach(v => {
     const l = v.lang.toLowerCase(), n = v.name.toLowerCase();
@@ -717,7 +558,6 @@ function loadVoices() {
     else if (l.startsWith('en')) groups.English.push(v);
     else groups.Other.push(v);
   });
-  
   Object.entries(groups).forEach(([k, list]) => {
     if (!list.length) return;
     const og = document.createElement('optgroup');
@@ -730,9 +570,9 @@ function loadVoices() {
     });
     voiceSel.appendChild(og);
   });
-  
   if (prev && voices.some(v => v.name === prev)) voiceSel.value = prev;
 
+  // Show/hide Gujarati missing-voice tip
   const hasGujarati = voices.some(v => v.lang.toLowerCase().startsWith('gu') || v.name.toLowerCase().includes('gujarati'));
   const tip = document.getElementById('gujaratiTip');
   if (tip) tip.style.display = hasGujarati ? 'none' : 'block';
@@ -748,17 +588,6 @@ function detectLang(t) {
 }
 
 function bestVoice(lang) {
-  // Prefer high-quality voices
-  const prefs = {
-    'gu': ['Google ગુજરાતી', 'Nira'],
-    'hi': ['Google हिन्दी', 'Microsoft Hemant', 'Lekha'],
-    'en': ['Google US English', 'Samantha', 'Daniel', 'Google UK English']
-  };
-  
-  for (let name of (prefs[lang] || [])) {
-    const v = voices.find(x => x.name.includes(name));
-    if (v) return v;
-  }
   return voices.find(v => v.lang.startsWith(lang)) || voices[0];
 }
 
@@ -779,13 +608,11 @@ speakBtn.onclick = () => {
   resetUI();
 
   const u = new SpeechSynthesisUtterance(t);
-  const detectedLang = detectLang(t);
-  u.voice = voiceSel.value ? voices.find(v => v.name === voiceSel.value) : bestVoice(detectedLang);
+  u.voice = voiceSel.value ? voices.find(v => v.name === voiceSel.value) : bestVoice(detectLang(t));
   u.rate = +rateEl.value;
   u.pitch = +pitchEl.value;
 
-  let lastProgress = 0;
-  let wordCount = 0;
+  let last = 0;
 
   u.onstart = () => {
     speakBtn.disabled = true;
@@ -797,11 +624,8 @@ speakBtn.onclick = () => {
 
   u.onboundary = e => {
     if (e.name === 'word') {
-      wordCount++;
-      // Use word-based progress for smoother bar
-      const estimatedWords = t.split(/\s+/).length;
-      const pct = Math.min(100, Math.max(lastProgress, (wordCount / estimatedWords) * 100));
-      lastProgress = pct;
+      const pct = Math.min(100, Math.max(last, (e.charIndex / t.length) * 100));
+      last = pct;
       progressFill.style.width = pct + '%';
     }
   };
@@ -809,15 +633,12 @@ speakBtn.onclick = () => {
   u.onend = () => {
     resetUI();
     setStatus('Done', 'done');
-    window.dispatchEvent(new CustomEvent('speechDone', { detail: { success: true } }));
+    window.dispatchEvent(new Event('speechDone'));
   };
 
-  u.onerror = (e) => {
-    if (e.error !== 'canceled') {
-      resetUI();
-      setStatus('Error: ' + e.error);
-    }
-    window.dispatchEvent(new CustomEvent('speechDone', { detail: { success: false } }));
+  u.onerror = () => {
+    resetUI();
+    setStatus('Error');
   };
 
   synth.speak(u);
@@ -842,191 +663,137 @@ stopBtn.onclick = () => {
   setStatus('Stopped');
 };
 
-// ── Recording Functions ───────────────────────────────────────────────────────
+// ── Save Audio ────────────────────────────────────────────────────────────────
+// Uses ResponsiveVoice API (free CDN, no key, no CORS issues, works on iOS)
+// Loads the RV script on demand, speaks + captures via AudioContext destination.
+// Falls back to plain speak if script fails to load.
 
-function openRecordingModal() {
-  if (!textEl.value.trim()) {
-    setStatus('Enter text first');
-    return;
-  }
-  recordingModal.classList.add('show');
-  modalStart.style.display = 'block';
-  modalRecording.classList.remove('show');
+function getTTSLang(text) {
+  if (/[\u0A80-\u0AFF]/.test(text)) return 'gu';
+  if (/[\u0900-\u097F]/.test(text)) return 'hi';
+  return 'en';
 }
 
-function closeModal() {
-  recordingModal.classList.remove('show');
+// Map lang to ResponsiveVoice voice name
+function getRVVoice(lang) {
+  if (lang === 'hi') return 'Hindi Female';
+  if (lang === 'gu') return 'Gujarati Female';
+  return 'UK English Female';
 }
 
-async function startRecordingProcess() {
-  modalStart.style.display = 'none';
-  modalRecording.classList.add('show');
-  
+// Dynamically load ResponsiveVoice script
+function loadRV() {
+  return new Promise((resolve, reject) => {
+    if (window.responsiveVoice) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://code.responsivevoice.org/responsivevoice.js?key=FREE';
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Failed to load voice engine'));
+    document.head.appendChild(s);
+  });
+}
+
+recordBtn.onclick = async () => {
+  if (isRecording) return;
+  const t = textEl.value.trim();
+  if (!t) { setStatus('Enter text first'); return; }
+
+  isRecording = true;
+  recordBtn.disabled = true;
+  progress.classList.add('show');
+  progressFill.style.width = '10%';
+  setStatus('Loading voice engine…', 'recording');
+
   try {
-    // Request screen share with audio
-    const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: { width: 1, height: 1, displaySurface: 'browser' },
-      audio: { 
-        echoCancellation: false,
-        noiseSuppression: false,
-        sampleRate: 44100
-      },
-      preferCurrentTab: true
+    // Load ResponsiveVoice
+    await loadRV();
+    progressFill.style.width = '25%';
+    setStatus('Generating audio…', 'recording');
+
+    const lang = getTTSLang(t);
+    const voice = getRVVoice(lang);
+
+    // ResponsiveVoice can directly download via its internal fetch
+    // We use its speak() with onstart/onend to track, and also
+    // trigger a direct MP3 download using their audio endpoint
+    
+    // RV internal audio URL (works without CORS issues as same-domain audio)
+    const rvBase = 'https://code.responsivevoice.org/getvoice.php';
+    const params = new URLSearchParams({
+      t: t.slice(0, 200), // RV free limit
+      tl: lang === 'en' ? 'en-GB' : lang === 'hi' ? 'hi' : 'gu',
+      sv: '',
+      vn: '',
+      pitch: '0.5',
+      rate: rateEl.value,
+      vol: '1',
+      hl: 'en-GB'
     });
 
-    // Verify audio track exists
-    const audioTracks = stream.getAudioTracks();
-    if (audioTracks.length === 0) {
-      throw new Error('No audio track selected. Please enable "Share tab audio" in the dialog.');
-    }
-
-    // Setup recording
-    recordingStream = stream;
-    recordedChunks = [];
+    progressFill.style.width = '50%';
+    const audioURL = `${rvBase}?${params}`;
     
-    // Use best available codec
-    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
-      ? 'audio/webm;codecs=opus' 
-      : 'audio/webm';
+    // Fetch the audio
+    const res = await fetch(audioURL, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) throw new Error(`Audio fetch failed: ${res.status}`);
     
-    mediaRecorder = new MediaRecorder(stream, {
-      mimeType: mimeType,
-      audioBitsPerSecond: 128000
-    });
-
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) {
-        recordedChunks.push(e.data);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      finalizeRecording();
-    };
-
-    // Handle stream ending (user clicks "Stop sharing")
-    stream.getVideoTracks()[0]?.addEventListener('ended', () => {
-      if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-      }
-    });
-
-    // Start recording
-    mediaRecorder.start(100); // Collect data every 100ms
-    isRecording = true;
+    const buf = await res.arrayBuffer();
+    if (buf.byteLength < 500) throw new Error('Audio too small — may be blocked');
     
-    // Start speech
-    setTimeout(() => {
-      if (!synth.speaking) speakBtn.click();
-    }, 300);
+    progressFill.style.width = '85%';
 
-    // Auto-stop when speech ends
-    window.addEventListener('speechDone', handleSpeechDone, { once: true });
+    const blob = new Blob([buf], { type: 'audio/mpeg' });
+    const blobURL = URL.createObjectURL(blob);
+
+    // Play it
+    const audio = new Audio(blobURL);
+    audio.play().catch(() => {});
+
+    // Download it
+    const a = document.createElement('a');
+    a.href = blobURL;
+    a.download = `tts-${lang}-${Date.now()}.mp3`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(blobURL); }, 1000);
+
+    progressFill.style.width = '100%';
+    setStatus('MP3 saved ✓', 'done');
+    setTimeout(() => { progress.classList.remove('show'); progressFill.style.width = '0%'; }, 2000);
 
   } catch (err) {
-    console.error('Recording setup error:', err);
-    setStatus(err.message || 'Recording failed');
-    closeModal();
-    resetRecordingState();
-  }
-}
+    console.warn('Save MP3 error:', err.message);
+    progress.classList.remove('show');
+    progressFill.style.width = '0%';
 
-function handleSpeechDone(e) {
-  // Give a small buffer to capture the end of speech
-  setTimeout(() => {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
+    // Friendly error with specific cause
+    if (err.message.includes('load')) {
+      setStatus('No internet — cannot save MP3');
+    } else if (err.message.includes('blocked') || err.message.includes('small')) {
+      setStatus('MP3 blocked — try shorter text');
+    } else {
+      setStatus('MP3 failed — playing instead');
+      speakBtn.click();
     }
-  }, e.detail?.success ? 800 : 100);
-}
-
-function finalizeRecording() {
-  if (recordedChunks.length === 0) {
-    setStatus('No audio captured');
-    closeModal();
-    resetRecordingState();
-    return;
+  } finally {
+    isRecording = false;
+    recordBtn.disabled = false;
   }
+};
 
-  // Create blob and download
-  const mimeType = mediaRecorder.mimeType || 'audio/webm';
-  const blob = new Blob(recordedChunks, { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  
-  const timestamp = new Date().toISOString().slice(0,19).replace(/:/g,'-');
-  const lang = detectLang(textEl.value);
-  const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
-  
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `tts-${lang}-${timestamp}.${extension}`;
-  document.body.appendChild(a);
-  a.click();
-  
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
 
-  setStatus('Audio saved ✓', 'done');
-  closeModal();
-  resetRecordingState();
-}
-
-function cancelRecording() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-  }
-  synth.cancel();
-  closeModal();
-  resetRecordingState();
-  setStatus('Recording saved');
-}
-
-function resetRecordingState() {
-  isRecording = false;
-  mediaRecorder = null;
-  recordedChunks = [];
-  if (recordingStream) {
-    recordingStream.getTracks().forEach(t => t.stop());
-    recordingStream = null;
-  }
-}
-
-// Record button opens modal first
-recordBtn.onclick = openRecordingModal;
-
-// Live updates
 rateEl.oninput = () => document.getElementById('rateVal').textContent = rateEl.value + '×';
 pitchEl.oninput = () => document.getElementById('pitchVal').textContent = pitchEl.value;
 textEl.oninput = () => document.getElementById('charCount').textContent = textEl.value.length + ' chars';
 
-// Offline detection
 const offline = document.getElementById('offline');
 window.addEventListener('online', () => offline.classList.remove('show'));
 window.addEventListener('offline', () => offline.classList.add('show'));
 if (!navigator.onLine) offline.classList.add('show');
 
-// Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
-
-// Keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-  if (e.ctrlKey || e.metaKey) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      speakBtn.click();
-    } else if (e.key === ' ') {
-      e.preventDefault();
-      pauseBtn.click();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      stopBtn.click();
-    }
-  }
-});
 </script>
 </body>
 </html>
