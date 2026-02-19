@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mehul's Text to Speech App</title>
+    <title>Mehul's Natural TTS Pro</title>
     <link rel="manifest" href="manifest.json">
     <style>
         /* General Layout */
@@ -18,130 +18,148 @@
             padding: 20px;
         }
 
-        /* Header Styling */
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 420px;
+        }
+
         .header {
             display: flex;
             align-items: center;
-            margin-top: 40px;
+            justify-content: center;
             margin-bottom: 20px;
         }
-        .header img { width: 40px; margin-right: 10px; }
-        .header h1 {
-            font-size: 24px;
-            color: #1a202c;
-            margin: 0;
-        }
+        .header h1 { font-size: 22px; color: #1a202c; margin: 0; }
 
-        /* Textarea Styling */
         textarea {
-            width: 90%;
-            max-width: 400px;
-            height: 180px;
+            width: 100%;
+            height: 150px;
             border-radius: 12px;
             border: 1px solid #cbd5e0;
             padding: 15px;
             font-size: 16px;
             outline: none;
             resize: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+            margin-bottom: 15px;
         }
 
-        /* Controls */
-        .controls {
-            margin-top: 20px;
-            text-align: center;
-            width: 100%;
+        .control-group {
+            margin-bottom: 15px;
         }
 
         label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 10px;
-            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #4a5568;
         }
 
-        select {
-            padding: 10px 20px;
+        select, input[type="range"] {
+            width: 100%;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
-            background-color: #edf2f7;
-            font-size: 16px;
-            margin-bottom: 30px;
+            background-color: #f7fafc;
             cursor: pointer;
         }
 
-        .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
         }
 
         button {
             border: none;
-            padding: 12px 25px;
+            padding: 12px;
             border-radius: 8px;
             color: white;
-            font-size: 18px;
-            font-weight: 500;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: opacity 0.2s;
+            transition: transform 0.1s, opacity 0.2s;
         }
 
-        button:active { opacity: 0.8; }
+        button:active { transform: scale(0.96); }
 
-        #speak-btn { background-color: #48bb78; } /* Green */
-        #stop-btn { background-color: #f56565; }  /* Red */
+        #speak-btn { background-color: #48bb78; }
+        #stop-btn { background-color: #f56565; }
+        #download-btn { 
+            background-color: #4299e1; 
+            grid-column: span 2; 
+            margin-top: 5px;
+        }
 
+        .status-msg {
+            font-size: 12px;
+            color: #718096;
+            text-align: center;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <span style="font-size: 30px; margin-right: 10px;">🗣️</span>
-        <h1>Mehul's Text to Speech App</h1>
-    </div>
-
-    <textarea id="text-input" placeholder="Type or paste text here..."></textarea>
-
-    <div class="controls">
-        <label>Select Language:</label>
-        <select id="voice-select">
-            </select>
-
-        <div class="button-group">
-            <button id="speak-btn">▶️ Speak</button>
-            <button id="stop-btn">⏹️ Stop</button>
+    <div class="container">
+        <div class="header">
+            <span style="font-size: 24px; margin-right: 10px;">🎙️</span>
+            <h1>Mehul's TTS Pro</h1>
         </div>
+
+        <textarea id="text-input" placeholder="Enter text... Use commas for pauses!"></textarea>
+
+        <div class="control-group">
+            <label>Voice Selection</label>
+            <select id="voice-select"></select>
+        </div>
+
+        <div class="control-group">
+            <label>Speed (Rate): <span id="rate-label">0.9</span></label>
+            <input type="range" id="rate" min="0.5" max="2" value="0.9" step="0.1">
+        </div>
+
+        <div class="control-group">
+            <label>Pitch: <span id="pitch-label">1.0</span></label>
+            <input type="range" id="pitch" min="0" max="2" value="1" step="0.1">
+        </div>
+
+        <div class="button-grid">
+            <button id="speak-btn">▶️ Play</button>
+            <button id="stop-btn">⏹️ Stop</button>
+            <button id="download-btn">⬇️ Download Audio (Record)</button>
+        </div>
+        
+        <p class="status-msg" id="status">Ready to speak</p>
     </div>
 
     <script>
         const synth = window.speechSynthesis;
         const textInput = document.getElementById('text-input');
         const voiceSelect = document.getElementById('voice-select');
-        const speakBtn = document.getElementById('speak-btn');
-        const stopBtn = document.getElementById('stop-btn');
+        const rateInput = document.getElementById('rate');
+        const pitchInput = document.getElementById('pitch');
+        const rateLabel = document.getElementById('rate-label');
+        const pitchLabel = document.getElementById('pitch-label');
+        const statusMsg = document.getElementById('status');
 
         let voices = [];
 
-        // Load voices into the dropdown
         function populateVoiceList() {
             voices = synth.getVoices();
             voiceSelect.innerHTML = '';
-            
             voices.forEach((voice, i) => {
                 const option = document.createElement('option');
                 option.textContent = `${voice.name} (${voice.lang})`;
-                option.setAttribute('data-lang', voice.lang);
-                option.setAttribute('data-name', voice.name);
-                
-                // Default to English
-                if(voice.lang.includes('en-US')) {
-                    option.selected = true;
-                }
-                
+                option.value = i;
+                if(voice.lang.includes('en-US') && voice.name.includes('Samantha')) option.selected = true;
                 voiceSelect.appendChild(option);
             });
         }
@@ -151,28 +169,70 @@
             speechSynthesis.onvoiceschanged = populateVoiceList;
         }
 
-        // Speak function
-        speakBtn.addEventListener('click', () => {
-            if (synth.speaking) { synth.cancel(); }
-            
-            if (textInput.value !== '') {
-                const utterThis = new SpeechSynthesisUtterance(textInput.value);
-                const selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
-                
-                voices.forEach((voice) => {
-                    if (voice.name === selectedOption) {
-                        utterThis.voice = voice;
-                    }
-                });
-                
-                synth.speak(utterThis);
-            }
-        });
+        // Update labels on slider change
+        rateInput.oninput = () => rateLabel.textContent = rateInput.value;
+        pitchInput.oninput = () => pitchLabel.textContent = pitchInput.value;
 
-        // Stop function
-        stopBtn.addEventListener('click', () => {
-            synth.cancel();
-        });
+        function createUtterance() {
+            const utter = new SpeechSynthesisUtterance(textInput.value);
+            const selectedVoice = voices[voiceSelect.value];
+            utter.voice = selectedVoice;
+            utter.rate = rateInput.value;
+            utter.pitch = pitchInput.value;
+            return utter;
+        }
+
+        document.getElementById('speak-btn').onclick = () => {
+            if (synth.speaking) synth.cancel();
+            if (textInput.value !== '') {
+                const utter = createUtterance();
+                synth.speak(utter);
+            }
+        };
+
+        document.getElementById('stop-btn').onclick = () => synth.cancel();
+
+        // RECORDING & DOWNLOAD LOGIC
+        document.getElementById('download-btn').onclick = async () => {
+            if (textInput.value === '') return alert("Please enter text first");
+
+            try {
+                // Captures system/tab audio
+                const stream = await navigator.mediaDevices.getDisplayMedia({ 
+                    video: { displaySurface: "browser", width: 1 }, 
+                    audio: true 
+                });
+
+                const mediaRecorder = new MediaRecorder(stream);
+                const chunks = [];
+
+                statusMsg.textContent = "Recording... please wait for speech to finish.";
+                statusMsg.style.color = "#f56565";
+
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'mehul-speech.webm';
+                    a.click();
+                    statusMsg.textContent = "Download complete!";
+                    statusMsg.style.color = "#48bb78";
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                const utter = createUtterance();
+                utter.onend = () => {
+                    setTimeout(() => mediaRecorder.stop(), 500); // Small buffer
+                };
+                
+                synth.speak(utter);
+            } catch (err) {
+                alert("To download, you must select 'This Tab' and check 'Share Tab Audio'.");
+            }
+        };
     </script>
 </body>
 </html>
