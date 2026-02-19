@@ -1,97 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mehul's Text to Speech</title>
-  
-  <!-- App Manifest -->
-  <link rel="manifest" href="manifest.json">
-  
-  <!-- App Icon -->
-  <link rel="apple-touch-icon" href="images.jpeg">
-  <link rel="icon" type="image/png" href="images.jpeg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mehul's Text to Speech App</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* General Layout */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 50px;
-      background: linear-gradient(180deg, #ffffff, #e6f0ff);
-    }
-    h2 {
-      color: #333;
-    }
-    textarea {
-      width: 80%;
-      max-width: 400px;
-      height: 120px;
-      border-radius: 10px;
-      border: 1px solid #aaa;
-      padding: 10px;
-      resize: none;
-      font-size: 16px;
-    }
-    select, button {
-      padding: 10px 15px;
-      border-radius: 8px;
-      border: none;
-      margin: 10px;
-      font-size: 16px;
-    }
-    button {
-      cursor: pointer;
-      color: #fff;
-    }
-    #speakBtn {
-      background-color: #4CAF50;
-    }
-    #stopBtn {
-      background-color: #ff4d4d;
-    }
-  </style>
+        /* Header Styling */
+        .header {
+            display: flex;
+            align-items: center;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        .header img { width: 40px; margin-right: 10px; }
+        .header h1 {
+            font-size: 24px;
+            color: #1a202c;
+            margin: 0;
+        }
+
+        /* Textarea Styling */
+        textarea {
+            width: 90%;
+            max-width: 400px;
+            height: 180px;
+            border-radius: 12px;
+            border: 1px solid #cbd5e0;
+            padding: 15px;
+            font-size: 16px;
+            outline: none;
+            resize: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        select {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background-color: #edf2f7;
+            font-size: 16px;
+            margin-bottom: 30px;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        button {
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            color: white;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        button:active { opacity: 0.8; }
+
+        #speak-btn { background-color: #48bb78; } /* Green */
+        #stop-btn { background-color: #f56565; }  /* Red */
+
+    </style>
 </head>
-
 <body>
-  <h2>🗣️ Mehul's Text to Speech App</h2>
 
-  <textarea id="text" placeholder="Type or paste text here..."></textarea><br>
+    <div class="header">
+        <span style="font-size: 30px; margin-right: 10px;">🗣️</span>
+        <h1>Mehul's Text to Speech App</h1>
+    </div>
 
-  <label for="language"><b>Select Language:</b></label><br>
-  <select id="language">
-    <option value="en-US">English</option>
-    <option value="hi-IN">Hindi</option>
-    <option value="gu-IN">Gujarati</option>
-  </select><br>
+    <textarea id="text-input" placeholder="Type or paste text here..."></textarea>
 
-  <button id="speakBtn" onclick="speak()">▶️ Speak</button>
-  <button id="stopBtn" onclick="stopSpeech()">⏹ Stop</button>
+    <div class="controls">
+        <label>Select Language:</label>
+        <select id="voice-select">
+            </select>
 
-  <script>
-    let utterance;
+        <div class="button-group">
+            <button id="speak-btn">▶️ Speak</button>
+            <button id="stop-btn">⏹️ Stop</button>
+        </div>
+    </div>
 
-    function speak() {
-      const text = document.getElementById("text").value.trim();
-      const lang = document.getElementById("language").value;
+    <script>
+        const synth = window.speechSynthesis;
+        const textInput = document.getElementById('text-input');
+        const voiceSelect = document.getElementById('voice-select');
+        const speakBtn = document.getElementById('speak-btn');
+        const stopBtn = document.getElementById('stop-btn');
 
-      if (!text) return alert("Please enter some text first!");
+        let voices = [];
 
-      // Cancel any ongoing speech before starting new one
-      if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-      }
+        // Load voices into the dropdown
+        function populateVoiceList() {
+            voices = synth.getVoices();
+            voiceSelect.innerHTML = '';
+            
+            voices.forEach((voice, i) => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`;
+                option.setAttribute('data-lang', voice.lang);
+                option.setAttribute('data-name', voice.name);
+                
+                // Default to English
+                if(voice.lang.includes('en-US')) {
+                    option.selected = true;
+                }
+                
+                voiceSelect.appendChild(option);
+            });
+        }
 
-      utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.rate = 1;
+        populateVoiceList();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
 
-      speechSynthesis.speak(utterance);
-    }
+        // Speak function
+        speakBtn.addEventListener('click', () => {
+            if (synth.speaking) { synth.cancel(); }
+            
+            if (textInput.value !== '') {
+                const utterThis = new SpeechSynthesisUtterance(textInput.value);
+                const selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
+                
+                voices.forEach((voice) => {
+                    if (voice.name === selectedOption) {
+                        utterThis.voice = voice;
+                    }
+                });
+                
+                synth.speak(utterThis);
+            }
+        });
 
-    function stopSpeech() {
-      speechSynthesis.cancel();
-    }
-  </script>
+        // Stop function
+        stopBtn.addEventListener('click', () => {
+            synth.cancel();
+        });
+    </script>
 </body>
 </html>
-
