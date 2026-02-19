@@ -664,33 +664,20 @@ stopBtn.onclick = () => {
 };
 
 // ── Save Audio ────────────────────────────────────────────────────────────────
-// Strategy: fetch audio from Google Translate TTS API (free, no key needed)
-// for English. For Hindi/Gujarati use same endpoint with correct lang code.
-// Splits long text into chunks (Google TTS limit ~200 chars per request).
-// Falls back to a clear error message if fetch fails.
+// Uses multiple CORS proxies as fallback chain to fetch Google Translate TTS.
+// Works on iOS Safari, Chrome, Firefox, Edge.
 
-const isIOS = (
-  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-);
-
-// Language code map for Google Translate TTS
 function getTTSLang(text) {
   if (/[\u0A80-\u0AFF]/.test(text)) return 'gu';
   if (/[\u0900-\u097F]/.test(text)) return 'hi';
   return 'en';
 }
 
-// Split text into chunks ≤ 200 chars at word/sentence boundaries
-function splitText(text, maxLen = 190) {
+function splitText(text, maxLen = 180) {
   const chunks = [];
   let remaining = text.trim();
   while (remaining.length > 0) {
-    if (remaining.length <= maxLen) {
-      chunks.push(remaining);
-      break;
-    }
-    // Find last space/punctuation before maxLen
+    if (remaining.length <= maxLen) { chunks.push(remaining); break; }
     let cut = remaining.lastIndexOf(' ', maxLen);
     if (cut <= 0) cut = remaining.lastIndexOf(',', maxLen);
     if (cut <= 0) cut = remaining.lastIndexOf('.', maxLen);
@@ -701,25 +688,49 @@ function splitText(text, maxLen = 190) {
   return chunks.filter(c => c.length > 0);
 }
 
-// Fetch one audio chunk from Google Translate TTS
-async function fetchTTSChunk(text, lang) {
-  const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(text)}`;
-  const res = await fetch(url, {
-    headers: { 'Referer': 'https://translate.google.com/' }
-  });
-  if (!res.ok) throw new Error(`TTS fetch failed: ${res.status}`);
-  return await res.arrayBuffer();
+// Try fetching TTS audio through multiple strategies
+async function fetchTTSAudio(text, lang) {
+  const encoded = encodeURIComponent(text);
+  const googleURL = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encoded}`;
+
+  // Multiple CORS proxy options — try each in order
+  const proxies = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(googleURL)}`,
+    `https://corsproxy.io/?${encodeURIComponent(googleURL)}`,
+    `https://cors-anywhere.herokuapp.com/${googleURL}`,
+  ];
+
+  // Try direct first (works on some browsers/networks)
+  try {
+    const res = await fetch(googleURL, { 
+      headers: { 'Referer': 'https://translate.google.com/' },
+      signal: AbortSignal.timeout(6000)
+    });
+    if (res.ok) {
+      const buf = await res.arrayBuffer();
+      if (buf.byteLength > 1000) return buf; // valid audio
+    }
+  } catch(e) { /* try proxies */ }
+
+  // Try each proxy
+  for (const proxyURL of proxies) {
+    try {
+      const res = await fetch(proxyURL, { signal: AbortSignal.timeout(8000) });
+      if (res.ok) {
+        const buf = await res.arrayBuffer();
+        if (buf.byteLength > 1000) return buf;
+      }
+    } catch(e) { continue; }
+  }
+
+  throw new Error('All TTS sources failed');
 }
 
-// Concatenate multiple MP3 ArrayBuffers into one Blob
 function mergeAudioBuffers(buffers) {
   const total = buffers.reduce((sum, b) => sum + b.byteLength, 0);
   const merged = new Uint8Array(total);
   let offset = 0;
-  for (const buf of buffers) {
-    merged.set(new Uint8Array(buf), offset);
-    offset += buf.byteLength;
-  }
+  for (const buf of buffers) { merged.set(new Uint8Array(buf), offset); offset += buf.byteLength; }
   return new Blob([merged], { type: 'audio/mpeg' });
 }
 
@@ -728,15 +739,11 @@ recordBtn.onclick = async () => {
   const t = textEl.value.trim();
   if (!t) { setStatus('Enter text first'); return; }
 
-  // Show iOS info tip (still can't record on iOS, but fetch+download works!)
-  // Actually Google TTS fetch DOES work on iOS too - no restriction on fetch
-  // So we use the same path for all platforms
-
   isRecording = true;
   recordBtn.disabled = true;
-  setStatus('Fetching audio…', 'recording');
   progress.classList.add('show');
-  progressFill.style.width = '10%';
+  progressFill.style.width = '5%';
+  setStatus('Fetching audio…', 'recording');
 
   try {
     const lang = getTTSLang(t);
@@ -744,40 +751,38 @@ recordBtn.onclick = async () => {
     const audioBuffers = [];
 
     for (let i = 0; i < chunks.length; i++) {
-      setStatus(`Fetching audio… ${i+1}/${chunks.length}`, 'recording');
-      progressFill.style.width = ((i+1)/chunks.length * 80 + 10) + '%';
-      const buf = await fetchTTSChunk(chunks[i], lang);
+      setStatus(`Fetching… ${i + 1}/${chunks.length}`, 'recording');
+      progressFill.style.width = ((i + 1) / chunks.length * 85 + 5) + '%';
+      const buf = await fetchTTSAudio(chunks[i], lang);
       audioBuffers.push(buf);
     }
 
     progressFill.style.width = '95%';
-    setStatus('Preparing download…', 'recording');
-
     const blob = mergeAudioBuffers(audioBuffers);
-
-    // Also PLAY the audio so user can hear it
     const audioURL = URL.createObjectURL(blob);
+
+    // Play it
     const audio = new Audio(audioURL);
-    audio.play().catch(() => {}); // play (non-blocking)
+    audio.play().catch(() => {});
 
     // Download it
     const a = document.createElement('a');
     a.href = audioURL;
     a.download = `tts-${Date.now()}.mp3`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
 
     progressFill.style.width = '100%';
     setStatus('MP3 saved ✓', 'done');
-
-    setTimeout(() => {
-      progress.classList.remove('show');
-      progressFill.style.width = '0%';
-    }, 2000);
+    setTimeout(() => { progress.classList.remove('show'); progressFill.style.width = '0%'; }, 2000);
 
   } catch (err) {
-    console.error('TTS fetch error:', err);
-    // If fetch fails (network, CORS, etc) fall back to speaking only
-    setStatus('⚠ Download failed — playing only', '');
+    console.warn('TTS download failed:', err);
+    progress.classList.remove('show');
+    progressFill.style.width = '0%';
+    // Clear fallback message and just speak
+    setStatus('No internet for MP3 — speaking instead');
     speakBtn.click();
   } finally {
     isRecording = false;
