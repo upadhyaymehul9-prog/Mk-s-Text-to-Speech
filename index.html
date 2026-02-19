@@ -138,7 +138,7 @@ body {
 
 textarea {
   width: 100%;
-  height: 140px;
+  height: 200px;
   border: 1px solid var(--border);
   border-radius: 3px;
   padding: 14px;
@@ -451,11 +451,6 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
     <div class="tagline">English · हिंदी · ગુજરાતી</div>
   </div>
 
-  <!-- Banner Image (compact) -->
-  <div style="margin-bottom:16px; border-radius:4px; overflow:hidden; border:1px solid var(--border); box-shadow:var(--card-shadow); height:110px;">
-    <img src="Image.jpeg" alt="Text to Speech" style="width:100%; height:100%; object-fit:cover; object-position:center 20%; display:block;" />
-  </div>
-
   <!-- Text Input -->
   <div class="card">
     <div class="card-label">Compose</div>
@@ -507,19 +502,8 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
       <button class="btn-speak" id="speak">▶ Speak</button>
       <button class="btn-stop" id="stop" disabled>⏹ Stop</button>
       <button class="btn-pause" id="pause" disabled>⏸ Pause</button>
-      <button class="btn-record" id="record">⬇ Save Audio</button>
+      <button class="btn-record" id="record">⬇ Save MP3</button>
     </div>
-  </div>
-
-  <!-- iOS Save Audio Info -->
-  <div id="iosMsg" style="display:none; margin-bottom:12px; padding:13px 15px; background:#f0f7ff; border:1px solid #b8d4f0; border-left:3px solid #2196F3; border-radius:3px; font-size:13px; line-height:1.6; color:#1a3a5c;">
-    <strong style="display:block; margin-bottom:4px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#2196F3;">ℹ Save Audio — iPhone/iPad</strong>
-    Safari cannot record speech audio due to iOS restrictions.<br><br>
-    <strong>To save audio on iPhone:</strong><br>
-    Use the <strong>Screen Recording</strong> feature in Control Centre while the app speaks:<br>
-    Settings → Control Centre → add <em>Screen Recording</em><br>
-    Then swipe down, tap ⏺ record, switch to this app, and tap <strong>Speak</strong>.<br><br>
-    <strong>Or try on desktop Chrome</strong> — Save Audio works fully there. ✅
   </div>
 
   <!-- Status -->
@@ -679,135 +663,125 @@ stopBtn.onclick = () => {
   setStatus('Stopped');
 };
 
-// ── Save Audio ───────────────────────────────────────────────────────────────
-// iOS Safari cannot capture Web Speech API audio (OS restriction).
-// On desktop Chrome/Edge, we use getDisplayMedia tab capture which DOES work.
+// ── Save Audio ────────────────────────────────────────────────────────────────
+// Strategy: fetch audio from Google Translate TTS API (free, no key needed)
+// for English. For Hindi/Gujarati use same endpoint with correct lang code.
+// Splits long text into chunks (Google TTS limit ~200 chars per request).
+// Falls back to a clear error message if fetch fails.
 
-// Detect iOS/Safari reliably:
-// 1. Classic iPhone/iPod user agent
-// 2. iPad on iOS 13+ which reports as "Macintosh" — caught by maxTouchPoints
-// 3. Any browser where getDisplayMedia is not available (Safari/iOS)
 const isIOS = (
   /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
-  /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ||
-  typeof navigator.mediaDevices?.getDisplayMedia === 'undefined'
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 );
+
+// Language code map for Google Translate TTS
+function getTTSLang(text) {
+  if (/[\u0A80-\u0AFF]/.test(text)) return 'gu';
+  if (/[\u0900-\u097F]/.test(text)) return 'hi';
+  return 'en';
+}
+
+// Split text into chunks ≤ 200 chars at word/sentence boundaries
+function splitText(text, maxLen = 190) {
+  const chunks = [];
+  let remaining = text.trim();
+  while (remaining.length > 0) {
+    if (remaining.length <= maxLen) {
+      chunks.push(remaining);
+      break;
+    }
+    // Find last space/punctuation before maxLen
+    let cut = remaining.lastIndexOf(' ', maxLen);
+    if (cut <= 0) cut = remaining.lastIndexOf(',', maxLen);
+    if (cut <= 0) cut = remaining.lastIndexOf('.', maxLen);
+    if (cut <= 0) cut = maxLen;
+    chunks.push(remaining.slice(0, cut).trim());
+    remaining = remaining.slice(cut).trim();
+  }
+  return chunks.filter(c => c.length > 0);
+}
+
+// Fetch one audio chunk from Google Translate TTS
+async function fetchTTSChunk(text, lang) {
+  const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(text)}`;
+  const res = await fetch(url, {
+    headers: { 'Referer': 'https://translate.google.com/' }
+  });
+  if (!res.ok) throw new Error(`TTS fetch failed: ${res.status}`);
+  return await res.arrayBuffer();
+}
+
+// Concatenate multiple MP3 ArrayBuffers into one Blob
+function mergeAudioBuffers(buffers) {
+  const total = buffers.reduce((sum, b) => sum + b.byteLength, 0);
+  const merged = new Uint8Array(total);
+  let offset = 0;
+  for (const buf of buffers) {
+    merged.set(new Uint8Array(buf), offset);
+    offset += buf.byteLength;
+  }
+  return new Blob([merged], { type: 'audio/mpeg' });
+}
 
 recordBtn.onclick = async () => {
   if (isRecording) return;
   const t = textEl.value.trim();
   if (!t) { setStatus('Enter text first'); return; }
 
-  // ── iOS/Safari: not supported ──────────────────────────────────────────────
-  if (isIOS) {
-    // Show a styled info modal instead of silent broken file
-    const msg = document.getElementById('iosMsg');
-    if (msg) {
-      msg.style.display = msg.style.display === 'block' ? 'none' : 'block';
-    }
-    return;
-  }
+  // Show iOS info tip (still can't record on iOS, but fetch+download works!)
+  // Actually Google TTS fetch DOES work on iOS too - no restriction on fetch
+  // So we use the same path for all platforms
 
-  // ── Desktop Chrome/Edge: use tab capture (getDisplayMedia) ─────────────────
-  // This DOES capture Web Speech API audio on desktop browsers
-  if (!confirm("A screen share dialog will open.\n\n1. Select \'This Tab\'\n2. ✅ Tick \'Share tab audio\'\n3. Click Share\n\nThen audio will be recorded automatically.")) return;
+  isRecording = true;
+  recordBtn.disabled = true;
+  setStatus('Fetching audio…', 'recording');
+  progress.classList.add('show');
+  progressFill.style.width = '10%';
 
   try {
-    const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: { width: 1, height: 1, frameRate: 1 },
-      audio: { echoCancellation: false, noiseSuppression: false, sampleRate: 44100 }
-    });
+    const lang = getTTSLang(t);
+    const chunks = splitText(t);
+    const audioBuffers = [];
 
-    const audioTracks = stream.getAudioTracks();
-    if (!audioTracks.length) {
-      stream.getTracks().forEach(t => t.stop());
-      setStatus('No audio track — did you tick "Share tab audio"?');
-      return;
+    for (let i = 0; i < chunks.length; i++) {
+      setStatus(`Fetching audio… ${i+1}/${chunks.length}`, 'recording');
+      progressFill.style.width = ((i+1)/chunks.length * 80 + 10) + '%';
+      const buf = await fetchTTSChunk(chunks[i], lang);
+      audioBuffers.push(buf);
     }
 
-    // Keep only audio
-    const audioStream = new MediaStream(audioTracks);
-    stream.getVideoTracks().forEach(t => t.stop());
+    progressFill.style.width = '95%';
+    setStatus('Preparing download…', 'recording');
 
-    isRecording = true;
-    recordBtn.disabled = true;
-    setStatus('Recording…', 'recording');
+    const blob = mergeAudioBuffers(audioBuffers);
 
-    // Pick best supported format
-    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-      ? 'audio/webm;codecs=opus'
-      : MediaRecorder.isTypeSupported('audio/webm')
-      ? 'audio/webm'
-      : 'audio/ogg';
+    // Also PLAY the audio so user can hear it
+    const audioURL = URL.createObjectURL(blob);
+    const audio = new Audio(audioURL);
+    audio.play().catch(() => {}); // play (non-blocking)
 
-    const recorder = new MediaRecorder(audioStream, { mimeType });
-    const chunks = [];
-    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    // Download it
+    const a = document.createElement('a');
+    a.href = audioURL;
+    a.download = `tts-${Date.now()}.mp3`;
+    a.click();
 
-    recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: mimeType });
-      const ext = mimeType.includes('ogg') ? 'ogg' : 'webm';
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `tts-${Date.now()}.${ext}`;
-      a.click();
-      audioStream.getTracks().forEach(t => t.stop());
-      isRecording = false;
-      recordBtn.disabled = false;
-      setStatus('Audio saved ✓', 'done');
-    };
+    progressFill.style.width = '100%';
+    setStatus('MP3 saved ✓', 'done');
 
-    recorder.start(100); // collect chunks every 100ms
-
-    // Speak — with small delay to ensure recorder is ready
     setTimeout(() => {
-      synth.cancel();
-      const u = new SpeechSynthesisUtterance(t);
-      u.voice = voiceSel.value ? voices.find(v => v.name === voiceSel.value) : bestVoice(detectLang(t));
-      u.rate = +rateEl.value;
-      u.pitch = +pitchEl.value;
+      progress.classList.remove('show');
+      progressFill.style.width = '0%';
+    }, 2000);
 
-      u.onstart = () => {
-        speakBtn.disabled = true;
-        stopBtn.disabled = false;
-        pauseBtn.disabled = false;
-        progress.classList.add('show');
-        setStatus('Recording…', 'recording');
-      };
-
-      u.onboundary = e => {
-        if (e.name === 'word') {
-          const pct = Math.min(100, Math.max(0, (e.charIndex / t.length) * 100));
-          progressFill.style.width = pct + '%';
-        }
-      };
-
-      u.onend = () => {
-        // Small tail to catch last audio frame
-        setTimeout(() => {
-          if (recorder.state === 'recording') recorder.stop();
-        }, 600);
-        resetUI();
-      };
-
-      u.onerror = () => {
-        if (recorder.state === 'recording') recorder.stop();
-        resetUI();
-        setStatus('Speech error');
-      };
-
-      synth.speak(u);
-    }, 300);
-
-  } catch (e) {
+  } catch (err) {
+    console.error('TTS fetch error:', err);
+    // If fetch fails (network, CORS, etc) fall back to speaking only
+    setStatus('⚠ Download failed — playing only', '');
+    speakBtn.click();
+  } finally {
     isRecording = false;
     recordBtn.disabled = false;
-    if (e.name === 'NotAllowedError') {
-      setStatus('Permission denied — screen share cancelled');
-    } else {
-      setStatus('Recording failed: ' + e.message);
-    }
   }
 };
 
