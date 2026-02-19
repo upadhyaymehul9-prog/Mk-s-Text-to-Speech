@@ -683,13 +683,16 @@ stopBtn.onclick = () => {
 // iOS Safari cannot capture Web Speech API audio (OS restriction).
 // On desktop Chrome/Edge, we use getDisplayMedia tab capture which DOES work.
 
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-// Update button label based on platform
-if (isIOS || isSafari) {
-  recordBtn.textContent = '⬇ Save Audio';
-}
+// Detect iOS/Safari reliably:
+// 1. Classic iPhone/iPod user agent
+// 2. iPad on iOS 13+ which reports as "Macintosh" — caught by maxTouchPoints
+// 3. Any browser where getDisplayMedia is not available (Safari/iOS)
+const isIOS = (
+  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+  /^((?!chrome|android).)*safari/i.test(navigator.userAgent) ||
+  typeof navigator.mediaDevices?.getDisplayMedia === 'undefined'
+);
 
 recordBtn.onclick = async () => {
   if (isRecording) return;
@@ -697,7 +700,7 @@ recordBtn.onclick = async () => {
   if (!t) { setStatus('Enter text first'); return; }
 
   // ── iOS/Safari: not supported ──────────────────────────────────────────────
-  if (isIOS || isSafari) {
+  if (isIOS) {
     // Show a styled info modal instead of silent broken file
     const msg = document.getElementById('iosMsg');
     if (msg) {
