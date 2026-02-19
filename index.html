@@ -511,6 +511,17 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
     </div>
   </div>
 
+  <!-- iOS Save Audio Info -->
+  <div id="iosMsg" style="display:none; margin-bottom:12px; padding:13px 15px; background:#f0f7ff; border:1px solid #b8d4f0; border-left:3px solid #2196F3; border-radius:3px; font-size:13px; line-height:1.6; color:#1a3a5c;">
+    <strong style="display:block; margin-bottom:4px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:#2196F3;">ℹ Save Audio — iPhone/iPad</strong>
+    Safari cannot record speech audio due to iOS restrictions.<br><br>
+    <strong>To save audio on iPhone:</strong><br>
+    Use the <strong>Screen Recording</strong> feature in Control Centre while the app speaks:<br>
+    Settings → Control Centre → add <em>Screen Recording</em><br>
+    Then swipe down, tap ⏺ record, switch to this app, and tap <strong>Speak</strong>.<br><br>
+    <strong>Or try on desktop Chrome</strong> — Save Audio works fully there. ✅
+  </div>
+
   <!-- Status -->
   <div class="status-card" id="statusCard">
     <div class="status-dot" id="statusDot"></div>
@@ -668,129 +679,135 @@ stopBtn.onclick = () => {
   setStatus('Stopped');
 };
 
-// ── MP3 Save via Web Audio API + lamejs ──────────────────────────────────────
-// Strategy: route SpeechSynthesis through an AudioContext, capture PCM samples
-// in a ScriptProcessor, encode to MP3 with lamejs, download as .mp3.
-// No screen-share / getDisplayMedia needed.
+// ── Save Audio ───────────────────────────────────────────────────────────────
+// iOS Safari cannot capture Web Speech API audio (OS restriction).
+// On desktop Chrome/Edge, we use getDisplayMedia tab capture which DOES work.
 
-let lamejsReady = false;
-const lamejsScript = document.createElement('script');
-lamejsScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js';
-lamejsScript.onload = () => { lamejsReady = true; };
-document.head.appendChild(lamejsScript);
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+// Update button label based on platform
+if (isIOS || isSafari) {
+  recordBtn.textContent = '⬇ Save Audio';
+}
 
 recordBtn.onclick = async () => {
   if (isRecording) return;
   const t = textEl.value.trim();
   if (!t) { setStatus('Enter text first'); return; }
 
-  if (!lamejsReady) {
-    setStatus('MP3 encoder loading, retry…');
-    setTimeout(() => { if (lamejsReady) setStatus('Ready'); }, 1500);
-    return;
-  }
-
-  // Web Audio context — must be created (or resumed) from a user gesture
-  const SAMPLE_RATE = 44100;
-  let actx;
-  try {
-    actx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SAMPLE_RATE });
-    if (actx.state === 'suspended') await actx.resume();
-  } catch(e) {
-    setStatus('AudioContext failed: ' + e.message);
-    return;
-  }
-
-  // Destination → MediaStream → MediaStreamSource → ScriptProcessor → collect PCM
-  const dest = actx.createMediaStreamDestination();
-  const BUFFER = 4096;
-  const proc = actx.createScriptProcessor(BUFFER, 1, 1);
-  const pcmChunks = [];
-
-  proc.onaudioprocess = ev => {
-    // Copy the input buffer (Float32) so it doesn't get recycled
-    const buf = ev.inputBuffer.getChannelData(0);
-    pcmChunks.push(new Float32Array(buf));
-  };
-
-  // Connect: destination ← proc ← destination (loopback trick)
-  const srcNode = actx.createMediaStreamSource(dest.stream);
-  srcNode.connect(proc);
-  proc.connect(actx.destination); // must connect somewhere to fire onaudioprocess
-
-  isRecording = true;
-  recordBtn.disabled = true;
-  setStatus('Recording…', 'recording');
-
-  // Speak into the audio context destination
-  synth.cancel();
-  const u = new SpeechSynthesisUtterance(t);
-  u.voice = voiceSel.value ? voices.find(v => v.name === voiceSel.value) : bestVoice(detectLang(t));
-  u.rate  = +rateEl.value;
-  u.pitch = +pitchEl.value;
-
-  let last = 0;
-  u.onstart = () => {
-    speakBtn.disabled = true;
-    stopBtn.disabled = false;
-    pauseBtn.disabled = false;
-    progress.classList.add('show');
-  };
-  u.onboundary = e => {
-    if (e.name === 'word') {
-      const pct = Math.min(100, Math.max(last, (e.charIndex / t.length) * 100));
-      last = pct;
-      progressFill.style.width = pct + '%';
+  // ── iOS/Safari: not supported ──────────────────────────────────────────────
+  if (isIOS || isSafari) {
+    // Show a styled info modal instead of silent broken file
+    const msg = document.getElementById('iosMsg');
+    if (msg) {
+      msg.style.display = msg.style.display === 'block' ? 'none' : 'block';
     }
-  };
+    return;
+  }
 
-  const finishRecording = () => {
-    // small tail to catch last audio frame
-    setTimeout(() => {
-      proc.disconnect();
-      srcNode.disconnect();
-      actx.close();
+  // ── Desktop Chrome/Edge: use tab capture (getDisplayMedia) ─────────────────
+  // This DOES capture Web Speech API audio on desktop browsers
+  if (!confirm("A screen share dialog will open.\n\n1. Select \'This Tab\'\n2. ✅ Tick \'Share tab audio\'\n3. Click Share\n\nThen audio will be recorded automatically.")) return;
 
-      // Encode PCM → MP3 with lamejs
-      setStatus('Encoding MP3…', 'recording');
-      try {
-        const mp3enc = new lamejs.Mp3Encoder(1, SAMPLE_RATE, 128);
-        const mp3Data = [];
-        for (const chunk of pcmChunks) {
-          // Convert Float32 → Int16
-          const int16 = new Int16Array(chunk.length);
-          for (let i = 0; i < chunk.length; i++) {
-            int16[i] = Math.max(-32768, Math.min(32767, chunk[i] * 32768));
-          }
-          const encoded = mp3enc.encodeBuffer(int16);
-          if (encoded.length > 0) mp3Data.push(new Int8Array(encoded));
-        }
-        const tail = mp3enc.flush();
-        if (tail.length > 0) mp3Data.push(new Int8Array(tail));
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: { width: 1, height: 1, frameRate: 1 },
+      audio: { echoCancellation: false, noiseSuppression: false, sampleRate: 44100 }
+    });
 
-        const blob = new Blob(mp3Data, { type: 'audio/mp3' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `tts-${Date.now()}.mp3`;
-        a.click();
+    const audioTracks = stream.getAudioTracks();
+    if (!audioTracks.length) {
+      stream.getTracks().forEach(t => t.stop());
+      setStatus('No audio track — did you tick "Share tab audio"?');
+      return;
+    }
 
-        setStatus('MP3 saved ✓', 'done');
-      } catch(e) {
-        setStatus('Encode error: ' + e.message);
-      }
+    // Keep only audio
+    const audioStream = new MediaStream(audioTracks);
+    stream.getVideoTracks().forEach(t => t.stop());
 
+    isRecording = true;
+    recordBtn.disabled = true;
+    setStatus('Recording…', 'recording');
+
+    // Pick best supported format
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : MediaRecorder.isTypeSupported('audio/webm')
+      ? 'audio/webm'
+      : 'audio/ogg';
+
+    const recorder = new MediaRecorder(audioStream, { mimeType });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: mimeType });
+      const ext = mimeType.includes('ogg') ? 'ogg' : 'webm';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `tts-${Date.now()}.${ext}`;
+      a.click();
+      audioStream.getTracks().forEach(t => t.stop());
       isRecording = false;
       recordBtn.disabled = false;
-      resetUI();
-      setStatus('MP3 saved ✓', 'done');
-    }, 400);
-  };
+      setStatus('Audio saved ✓', 'done');
+    };
 
-  u.onend   = () => { window.dispatchEvent(new Event('speechDone')); finishRecording(); };
-  u.onerror = () => { finishRecording(); setStatus('Speech error'); };
+    recorder.start(100); // collect chunks every 100ms
 
-  synth.speak(u);
+    // Speak — with small delay to ensure recorder is ready
+    setTimeout(() => {
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(t);
+      u.voice = voiceSel.value ? voices.find(v => v.name === voiceSel.value) : bestVoice(detectLang(t));
+      u.rate = +rateEl.value;
+      u.pitch = +pitchEl.value;
+
+      u.onstart = () => {
+        speakBtn.disabled = true;
+        stopBtn.disabled = false;
+        pauseBtn.disabled = false;
+        progress.classList.add('show');
+        setStatus('Recording…', 'recording');
+      };
+
+      u.onboundary = e => {
+        if (e.name === 'word') {
+          const pct = Math.min(100, Math.max(0, (e.charIndex / t.length) * 100));
+          progressFill.style.width = pct + '%';
+        }
+      };
+
+      u.onend = () => {
+        // Small tail to catch last audio frame
+        setTimeout(() => {
+          if (recorder.state === 'recording') recorder.stop();
+        }, 600);
+        resetUI();
+      };
+
+      u.onerror = () => {
+        if (recorder.state === 'recording') recorder.stop();
+        resetUI();
+        setStatus('Speech error');
+      };
+
+      synth.speak(u);
+    }, 300);
+
+  } catch (e) {
+    isRecording = false;
+    recordBtn.disabled = false;
+    if (e.name === 'NotAllowedError') {
+      setStatus('Permission denied — screen share cancelled');
+    } else {
+      setStatus('Recording failed: ' + e.message);
+    }
+  }
 };
+
 
 rateEl.oninput = () => document.getElementById('rateVal').textContent = rateEl.value + '×';
 pitchEl.oninput = () => document.getElementById('pitchVal').textContent = pitchEl.value;
