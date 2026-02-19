@@ -1,266 +1,350 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mehul's Natural TTS Pro</title>
-    <link rel="manifest" href="manifest.json">
-    <style>
-        /* FULL ORIGINAL CSS RESTORED */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#4CAF50" />
+<meta name="description" content="Browser-based Text-to-Speech with Hindi, Gujarati & English support. Offline-capable PWA." />
+<title>Mehul's Text to Speech</title>
 
-        .container {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            width: 100%;
-            max-width: 420px;
-        }
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="images.jpeg" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
 
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .header h1 { font-size: 22px; color: #1a202c; margin: 0; }
+<style>
+:root {
+  --primary:#4CAF50; --danger:#f44336; --warning:#ff9800; --info:#2196F3;
+  --bg:#f0f7ff; --card:#fff; --text:#333; --muted:#777; --border:#e0e0e0;
+}
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  margin:0; padding:16px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background:linear-gradient(180deg,var(--bg),#fff);
+  display:flex; justify-content:center; min-height:100vh;
+}
+.container {
+  width:100%; max-width:480px;
+  background:var(--card);
+  border-radius:22px;
+  padding:22px;
+  box-shadow:0 20px 50px rgba(0,0,0,.1);
+}
+h1 { text-align:center; font-size:22px; margin-bottom:16px; }
 
-        textarea {
-            width: 100%;
-            height: 150px;
-            border-radius: 12px;
-            border: 1px solid #cbd5e0;
-            padding: 15px;
-            font-size: 16px;
-            outline: none;
-            resize: none;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-        }
+textarea {
+  width:100%; height:150px;
+  border-radius:14px;
+  border:2px solid var(--border);
+  padding:14px; font-size:16px; resize:none;
+}
+textarea:focus { outline:none; border-color:var(--primary); }
 
-        .control-group {
-            margin-bottom: 15px;
-        }
+.char-count { text-align:right; font-size:12px; color:var(--muted); margin-top:4px; }
 
-        label {
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: #4a5568;
-        }
+.controls { margin-top:14px; }
+label { font-size:13px; color:var(--muted); font-weight:600; }
 
-        select, input[type="range"] {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            background-color: #f7fafc;
-            cursor: pointer;
-        }
+select, input[type="range"] {
+  width:100%; margin-top:6px; padding:8px;
+  border-radius:8px; border:1px solid var(--border);
+}
 
-        .button-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
-        }
+.buttons {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:10px; margin-top:16px;
+}
+button {
+  padding:14px; border:none; border-radius:12px;
+  font-size:15px; font-weight:600; cursor:pointer;
+}
+button:disabled { opacity:.5; cursor:not-allowed; }
 
-        button {
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s, opacity 0.2s;
-        }
+.btn-speak { background:var(--primary); color:#fff; }
+.btn-stop { background:var(--danger); color:#fff; }
+.btn-pause { background:var(--warning); color:#fff; }
+.btn-record { background:var(--info); color:#fff; }
 
-        button:active { transform: scale(0.96); }
+.status {
+  margin-top:14px; padding:12px; text-align:center;
+  border-radius:10px; font-size:13px;
+  background:#f2f2f2; color:var(--muted);
+}
+.status.speaking { background:rgba(76,175,80,0.1); color:var(--primary); }
+.status.recording { background:rgba(244,67,54,0.1); color:var(--danger); animation:pulse 1s infinite; }
 
-        #speak-btn { background-color: #48bb78; }
-        #stop-btn { background-color: #f56565; }
-        #download-btn { 
-            background-color: #4299e1; 
-            grid-column: span 2; 
-            margin-top: 5px;
-        }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
 
-        .status-msg {
-            font-size: 12px;
-            color: #718096;
-            text-align: center;
-            margin-top: 10px;
-        }
+.progress {
+  height:4px; background:#e0e0e0; border-radius:2px;
+  overflow:hidden; margin-top:8px; display:none;
+}
+.progress.show { display:block; }
+.progress div {
+  height:100%; width:0%; background:var(--primary);
+}
 
-        .version-label {
-            margin-top: 30px;
-            color: #cbd5e0;
-            font-size: 10px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-    </style>
+.offline-badge {
+  position:fixed; top:10px; right:10px;
+  background:#ff9800; color:#fff;
+  padding:4px 12px; border-radius:20px;
+  font-size:12px; font-weight:600; display:none;
+}
+.offline-badge.show { display:block; }
+
+.footer {
+  margin-top:18px; text-align:center;
+  font-size:11px; color:#bbb;
+}
+</style>
 </head>
+
 <body>
+<div class="offline-badge" id="offline">Offline</div>
 
-    <div class="container">
-        <div class="header">
-            <span style="font-size: 24px; margin-right: 10px;">🎙️</span>
-            <h1>Mehul's TTS Pro</h1>
-        </div>
+<div class="container">
+<h1>🗣️ Mehul's Text to Speech</h1>
 
-        <textarea id="text-input" placeholder="Enter text... Use commas for pauses!"></textarea>
+<textarea id="text" placeholder="Type in English, हिंदी, or ગુજરાતી..."></textarea>
+<div class="char-count" id="charCount">0 chars</div>
 
-        <div class="control-group">
-            <label>Voice Selection (⭐ = Best)</label>
-            <select id="voice-select"><option>Initializing AI Voices...</option></select>
-        </div>
+<div class="controls">
+<label>Voice / Language</label>
+<select id="voiceSelect">
+  <option value="">Auto-detect (Recommended)</option>
+</select>
+</div>
 
-        <div class="control-group">
-            <label>Speed (Rate): <span id="rate-label">0.9</span></label>
-            <input type="range" id="rate" min="0.5" max="1.5" value="0.9" step="0.1">
-        </div>
+<div class="controls">
+<label>Speed: <span id="rateVal">1.0</span>x</label>
+<input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
+</div>
 
-        <div class="control-group">
-            <label>Pitch: <span id="pitch-label">1.0</span></label>
-            <input type="range" id="pitch" min="0.5" max="1.5" value="1.0" step="0.1">
-        </div>
+<div class="controls">
+<label>Pitch: <span id="pitchVal">1.0</span></label>
+<input type="range" id="pitch" min="0.5" max="2" step="0.1" value="1">
+</div>
 
-        <div class="button-grid">
-            <button id="speak-btn">▶️ Play</button>
-            <button id="stop-btn">⏹️ Stop</button>
-            <button id="download-btn">⬇️ Download Audio (Record)</button>
-        </div>
-        
-        <p class="status-msg" id="status">Ready to speak</p>
-    </div>
+<div class="buttons">
+<button class="btn-speak" id="speak">▶ Speak</button>
+<button class="btn-stop" id="stop" disabled>⏹ Stop</button>
+<button class="btn-pause" id="pause" disabled>⏸ Pause</button>
+<button class="btn-record" id="record">⬇ Save Audio</button>
+</div>
 
-    <div class="version-label">Version 2.0 - Full AI Script</div>
+<div class="progress" id="progress"><div></div></div>
+<div class="status" id="status">Ready</div>
 
-    <script>
-        const synth = window.speechSynthesis;
-        const textInput = document.getElementById('text-input');
-        const voiceSelect = document.getElementById('voice-select');
-        const rateInput = document.getElementById('rate');
-        const pitchInput = document.getElementById('pitch');
-        const rateLabel = document.getElementById('rate-label');
-        const pitchLabel = document.getElementById('pitch-label');
-        const statusMsg = document.getElementById('status');
+<div class="footer">WEB SPEECH API • PWA • OFFLINE READY</div>
+</div>
 
-        let voices = [];
+<script>
+const synth = speechSynthesis;
+const textEl = document.getElementById('text');
+const voiceSel = document.getElementById('voiceSelect');
+const rateEl = document.getElementById('rate');
+const pitchEl = document.getElementById('pitch');
+const statusEl = document.getElementById('status');
+const progress = document.getElementById('progress');
+const progressFill = progress.firstElementChild;
+const speakBtn = document.getElementById('speak');
+const stopBtn = document.getElementById('stop');
+const pauseBtn = document.getElementById('pause');
+const recordBtn = document.getElementById('record');
 
-        function populateVoiceList() {
-            voices = synth.getVoices();
-            if (voices.length === 0) return;
+let voices = [];
+let isRecording = false;
 
-            // PRESERVED AI SORTING: Moves Google/Natural/Siri to the top
-            voices.sort((a, b) => {
-                const isPremium = (v) => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Enhanced') || v.name.includes('Premium');
-                return isPremium(b) - isPremium(a);
-            });
+/* ---------- VOICES ---------- */
+function loadVoices() {
+  const prev = voiceSel.value;
+  voices = synth.getVoices();
+  if (!voices.length) return;
 
-            voiceSelect.innerHTML = '';
-            voices.forEach((voice, i) => {
-                const option = document.createElement('option');
-                const isHighQuality = voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Enhanced');
-                option.textContent = (isHighQuality ? '⭐ ' : '') + `${voice.name} (${voice.lang})`;
-                option.value = i;
-                
-                // Set default to a natural voice if available
-                if (voice.name.includes('Google US English') || voice.name.includes('Samantha')) {
-                    option.selected = true;
-                }
-                voiceSelect.appendChild(option);
-            });
-            statusMsg.textContent = "AI Voices Ready";
-        }
+  voices.sort((a,b)=>(/Google|Natural|Enhanced/i.test(b.name))-(/Google|Natural|Enhanced/i.test(a.name)));
+  voiceSel.innerHTML = '<option value="">Auto-detect (Recommended)</option>';
 
-        // Handle async voice loading across all browsers
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = populateVoiceList;
-        }
-        populateVoiceList();
+  const groups={Hindi:[],Gujarati:[],English:[],Other:[]};
+  voices.forEach(v=>{
+    const l=v.lang.toLowerCase(), n=v.name.toLowerCase();
+    if(l.startsWith('hi')||n.includes('hindi')) groups.Hindi.push(v);
+    else if(l.startsWith('gu')||n.includes('gujarati')) groups.Gujarati.push(v);
+    else if(l.startsWith('en')) groups.English.push(v);
+    else groups.Other.push(v);
+  });
 
-        rateInput.oninput = () => rateLabel.textContent = rateInput.value;
-        pitchInput.oninput = () => pitchLabel.textContent = pitchInput.value;
+  Object.entries(groups).forEach(([k,list])=>{
+    if(!list.length) return;
+    const og=document.createElement('optgroup');
+    og.label=`${k} (${list.length})`;
+    list.forEach(v=>{
+      const o=document.createElement('option');
+      o.value=v.name;
+      o.textContent=(/Google|Natural/i.test(v.name)?'⭐ ':'')+v.name;
+      og.appendChild(o);
+    });
+    voiceSel.appendChild(og);
+  });
 
-        function createUtterance() {
-            const utter = new SpeechSynthesisUtterance(textInput.value);
-            // Re-fetch current sorted voices to match selection index
-            const currentVoices = synth.getVoices().sort((a, b) => {
-                const isPremium = (v) => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Enhanced') || v.name.includes('Premium');
-                return isPremium(b) - isPremium(a);
-            });
-            utter.voice = currentVoices[voiceSelect.value];
-            utter.rate = rateInput.value;
-            utter.pitch = pitchInput.value;
-            return utter;
-        }
+  if(prev && voices.some(v=>v.name===prev)) voiceSel.value=prev;
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
 
-        document.getElementById('speak-btn').onclick = () => {
-            if (synth.speaking) synth.cancel();
-            if (textInput.value !== '') {
-                const utter = createUtterance();
-                synth.speak(utter);
-            }
-        };
+/* ---------- HELPERS ---------- */
+function detectLang(t){
+  if(/[\u0A80-\u0AFF]/.test(t)) return 'gu';
+  if(/[\u0900-\u097F]/.test(t)) return 'hi';
+  return 'en';
+}
+function bestVoice(lang){
+  return voices.find(v=>v.lang.startsWith(lang))||voices[0];
+}
+function resetUI(){
+  progress.classList.remove('show');
+  progressFill.style.width='0%';
+  speakBtn.disabled=false;
+  stopBtn.disabled=true;
+  pauseBtn.disabled=true;
+  pauseBtn.textContent='⏸ Pause';
+  statusEl.className='status';
+}
 
-        document.getElementById('stop-btn').onclick = () => synth.cancel();
+/* ---------- SPEAK ---------- */
+speakBtn.onclick=()=>{
+  const t=textEl.value.trim();
+  if(!t){statusEl.textContent='Enter text first';return;}
 
-        // FULL ORIGINAL RECORDING LOGIC
-        document.getElementById('download-btn').onclick = async () => {
-            if (textInput.value === '') return alert("Please enter text first");
+  synth.cancel();
+  resetUI();
 
-            try {
-                const stream = await navigator.mediaDevices.getDisplayMedia({ 
-                    video: { displaySurface: "browser", width: 1 }, 
-                    audio: true 
-                });
+  const u=new SpeechSynthesisUtterance(t);
+  u.voice=voiceSel.value?voices.find(v=>v.name===voiceSel.value):bestVoice(detectLang(t));
+  u.rate=+rateEl.value;
+  u.pitch=+pitchEl.value;
 
-                const mediaRecorder = new MediaRecorder(stream);
-                const chunks = [];
+  let last=0;
 
-                statusMsg.textContent = "Recording AI Voice...";
-                statusMsg.style.color = "#f56565";
+  u.onstart=()=>{
+    speakBtn.disabled=true;
+    stopBtn.disabled=false;
+    pauseBtn.disabled=false;
+    statusEl.textContent='Speaking...';
+    statusEl.className='status speaking';
+    progress.classList.add('show');
+  };
 
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'audio/webm' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'mehul-ai-speech.webm';
-                    a.click();
-                    statusMsg.textContent = "Download complete!";
-                    statusMsg.style.color = "#48bb78";
-                    stream.getTracks().forEach(track => track.stop());
-                };
+  u.onboundary=e=>{
+    if(e.name==='word'){
+      const pct=Math.min(100,Math.max(last,(e.charIndex/t.length)*100));
+      last=pct;
+      progressFill.style.width=pct+'%';
+    }
+  };
 
-                mediaRecorder.start();
-                const utter = createUtterance();
-                utter.onend = () => {
-                    setTimeout(() => mediaRecorder.stop(), 500);
-                };
-                
-                synth.speak(utter);
-            } catch (err) {
-                alert("To download, you must select 'This Tab' and check 'Share Tab Audio'.");
-            }
-        };
-    </script>
+  u.onend=()=>{
+    resetUI();
+    statusEl.textContent='Finished';
+    window.dispatchEvent(new Event('speechDone'));
+  };
+
+  u.onerror=()=>{
+    resetUI();
+    statusEl.textContent='Error';
+  };
+
+  synth.speak(u);
+};
+
+/* ---------- PAUSE ---------- */
+pauseBtn.onclick=()=>{
+  if(!synth.speaking) return;
+  if(synth.paused){
+    synth.resume();
+    pauseBtn.textContent='⏸ Pause';
+    statusEl.textContent='Speaking...';
+  }else{
+    synth.pause();
+    pauseBtn.textContent='▶ Resume';
+    statusEl.textContent='Paused';
+  }
+};
+
+/* ---------- STOP ---------- */
+stopBtn.onclick=()=>{
+  synth.cancel();
+  resetUI();
+  statusEl.textContent='Stopped';
+};
+
+/* ---------- RECORD (FIXED) ---------- */
+recordBtn.onclick=async()=>{
+  if(isRecording) return;
+  if(!textEl.value.trim()){statusEl.textContent='Enter text first';return;}
+  if(!confirm("Select 'This Tab' and enable 'Share tab audio'")) return;
+
+  try{
+    const stream=await navigator.mediaDevices.getDisplayMedia({video:{width:1,height:1},audio:true});
+    if(!stream.getAudioTracks().length) throw new Error('No audio track');
+
+    isRecording=true;
+    recordBtn.disabled=true;
+    statusEl.textContent='Recording...';
+    statusEl.className='status recording';
+
+    const r=new MediaRecorder(stream,{mimeType:'audio/webm;codecs=opus'});
+    const chunks=[];
+    r.ondataavailable=e=>chunks.push(e.data);
+
+    r.onstop=()=>{
+      const b=new Blob(chunks,{type:'audio/webm'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(b);
+      a.download=`tts-${Date.now()}.webm`;
+      a.click();
+      stream.getTracks().forEach(t=>t.stop());
+      isRecording=false;
+      recordBtn.disabled=false;
+      statusEl.textContent='Saved';
+      statusEl.className='status';
+    };
+
+    const MIN_MS=700;
+    const startTime=Date.now();
+
+    r.start();
+
+    if(!synth.speaking) speakBtn.click();
+
+    window.addEventListener('speechDone',()=>{
+      const elapsed=Date.now()-startTime;
+      const delay=Math.max(0,MIN_MS-elapsed);
+      setTimeout(()=>{ if(r.state==='recording') r.stop(); },delay);
+    },{once:true});
+
+  }catch(e){
+    isRecording=false;
+    recordBtn.disabled=false;
+    statusEl.textContent=e.message||'Recording failed';
+    statusEl.className='status';
+  }
+};
+
+/* ---------- LIVE UI ---------- */
+rateEl.oninput=()=>document.getElementById('rateVal').textContent=rateEl.value;
+pitchEl.oninput=()=>document.getElementById('pitchVal').textContent=pitchEl.value;
+textEl.oninput=()=>document.getElementById('charCount').textContent=textEl.value.length+' chars';
+
+/* ---------- OFFLINE ---------- */
+const offline=document.getElementById('offline');
+window.addEventListener('online',()=>offline.classList.remove('show'));
+window.addEventListener('offline',()=>offline.classList.add('show'));
+if(!navigator.onLine) offline.classList.add('show');
+
+/* ---------- SERVICE WORKER ---------- */
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+</script>
 </body>
 </html>
