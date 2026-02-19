@@ -1,23 +1,25 @@
 {
+  "id": "mehul-tts",
   "name": "Mehul's Text to Speech",
   "short_name": "TTS India",
-  "start_url": "./index.html",
+  "start_url": "./?source=pwa",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
   "orientation": "portrait",
+  "lang": "en-IN",
+  "description": "A free text-to-speech web app supporting English, Hindi, and Gujarati.",
   "icons": [
     {
       "src": "images.jpeg",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/jpeg"
     },
     {
       "src": "images.jpeg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/jpeg"
     }
-  ],
-  "description": "A free text-to-speech web app that supports English, Hindi, and Gujarati.",
-  "lang": "en-IN"
+  ]
 }
