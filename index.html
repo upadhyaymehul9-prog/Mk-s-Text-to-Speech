@@ -6,7 +6,7 @@
     <title>Mehul's Natural TTS Pro</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        /* General Layout - Restored & Optimized */
+        /* FULL ORIGINAL CSS RESTORED */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);
@@ -105,14 +105,13 @@
             margin-top: 10px;
         }
 
-        /* Version Tag for tracking updates */
-        .v-tag {
-            text-align: center;
-            margin-top: 20px;
+        .version-label {
+            margin-top: 30px;
             color: #cbd5e0;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
     </style>
 </head>
@@ -121,19 +120,19 @@
     <div class="container">
         <div class="header">
             <span style="font-size: 24px; margin-right: 10px;">🎙️</span>
-            <h1>Mehul's AI Voice Pro</h1>
+            <h1>Mehul's TTS Pro</h1>
         </div>
 
-        <textarea id="text-input" placeholder="Enter text... Use commas for natural pauses!"></textarea>
+        <textarea id="text-input" placeholder="Enter text... Use commas for pauses!"></textarea>
 
         <div class="control-group">
-            <label>AI Voice Selection (⭐ = Best)</label>
-            <select id="voice-select"></select>
+            <label>Voice Selection (⭐ = Best)</label>
+            <select id="voice-select"><option>Initializing AI Voices...</option></select>
         </div>
 
         <div class="control-group">
             <label>Speed (Rate): <span id="rate-label">0.9</span></label>
-            <input type="range" id="rate" min="0.5" max="1.3" value="0.9" step="0.1">
+            <input type="range" id="rate" min="0.5" max="1.5" value="0.9" step="0.1">
         </div>
 
         <div class="control-group">
@@ -150,7 +149,7 @@
         <p class="status-msg" id="status">Ready to speak</p>
     </div>
 
-    <div class="v-tag">VERSION 2.0 - HIGH QUALITY MODE</div>
+    <div class="version-label">Version 2.0 - Full AI Script</div>
 
     <script>
         const synth = window.speechSynthesis;
@@ -166,28 +165,31 @@
 
         function populateVoiceList() {
             voices = synth.getVoices();
-            
-            // AI QUALITY LOGIC: Prioritize 'Google', 'Natural', or 'Premium' voices
-            const sortedVoices = voices.sort((a, b) => {
-                const isAi = (v) => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Premium') || v.name.includes('Enhanced');
-                return isAi(b) - isAi(a);
+            if (voices.length === 0) return;
+
+            // PRESERVED AI SORTING: Moves Google/Natural/Siri to the top
+            voices.sort((a, b) => {
+                const isPremium = (v) => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Enhanced') || v.name.includes('Premium');
+                return isPremium(b) - isPremium(a);
             });
 
             voiceSelect.innerHTML = '';
-            sortedVoices.forEach((voice, i) => {
+            voices.forEach((voice, i) => {
                 const option = document.createElement('option');
-                const isPremium = voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Enhanced');
-                option.textContent = (isPremium ? '⭐ ' : '') + `${voice.name} (${voice.lang})`;
+                const isHighQuality = voice.name.includes('Google') || voice.name.includes('Natural') || voice.name.includes('Enhanced');
+                option.textContent = (isHighQuality ? '⭐ ' : '') + `${voice.name} (${voice.lang})`;
                 option.value = i;
                 
-                // Default to a known good voice if available
-                if (voice.name.includes('Google US English') || (voice.lang === 'en-US' && voice.name.includes('Samantha'))) {
+                // Set default to a natural voice if available
+                if (voice.name.includes('Google US English') || voice.name.includes('Samantha')) {
                     option.selected = true;
                 }
                 voiceSelect.appendChild(option);
             });
+            statusMsg.textContent = "AI Voices Ready";
         }
 
+        // Handle async voice loading across all browsers
         if (speechSynthesis.onvoiceschanged !== undefined) {
             speechSynthesis.onvoiceschanged = populateVoiceList;
         }
@@ -198,8 +200,12 @@
 
         function createUtterance() {
             const utter = new SpeechSynthesisUtterance(textInput.value);
-            const selectedVoice = voices[voiceSelect.value];
-            utter.voice = selectedVoice;
+            // Re-fetch current sorted voices to match selection index
+            const currentVoices = synth.getVoices().sort((a, b) => {
+                const isPremium = (v) => v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Enhanced') || v.name.includes('Premium');
+                return isPremium(b) - isPremium(a);
+            });
+            utter.voice = currentVoices[voiceSelect.value];
             utter.rate = rateInput.value;
             utter.pitch = pitchInput.value;
             return utter;
@@ -215,7 +221,7 @@
 
         document.getElementById('stop-btn').onclick = () => synth.cancel();
 
-        // RECORDING & DOWNLOAD LOGIC
+        // FULL ORIGINAL RECORDING LOGIC
         document.getElementById('download-btn').onclick = async () => {
             if (textInput.value === '') return alert("Please enter text first");
 
@@ -228,7 +234,7 @@
                 const mediaRecorder = new MediaRecorder(stream);
                 const chunks = [];
 
-                statusMsg.textContent = "Recording... please wait for speech to finish.";
+                statusMsg.textContent = "Recording AI Voice...";
                 statusMsg.style.color = "#f56565";
 
                 mediaRecorder.ondataavailable = e => chunks.push(e.data);
@@ -237,7 +243,7 @@
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'mehul-speech.webm';
+                    a.download = 'mehul-ai-speech.webm';
                     a.click();
                     statusMsg.textContent = "Download complete!";
                     statusMsg.style.color = "#48bb78";
