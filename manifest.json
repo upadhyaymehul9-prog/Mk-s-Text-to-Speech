@@ -5,12 +5,16 @@
   "start_url": "./index.html?source=pwa",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#faf8f5",
   "theme_color": "#1a1a2e",
   "orientation": "portrait",
   "lang": "en-IN",
+  "dir": "ltr",
   "description": "Convert text to voice in English, Hindi and Gujarati. Free offline-ready PWA.",
   "categories": ["utilities", "productivity"],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon-192.png",
@@ -31,12 +35,24 @@
       "purpose": "maskable"
     }
   ],
+  "screenshots": [
+    {
+      "src": "poster.png",
+      "sizes": "1280x853",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Text-to-Speech app showing Hindi, Gujarati and English support"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Speak Now",
       "short_name": "Speak",
       "url": "./index.html?source=shortcut",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
-  ]
+  ],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
 }
