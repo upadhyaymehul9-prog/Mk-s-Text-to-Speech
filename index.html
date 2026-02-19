@@ -312,16 +312,6 @@ button:not(:disabled):hover::after { transform: scaleX(1); }
 
 .btn-pause:not(:disabled):hover { background: white; }
 
-.btn-record {
-  background: var(--cream);
-  color: var(--sage);
-  border: 1px solid #cce0d4;
-  box-shadow: 0 1px 0 #c0d8cc;
-  grid-column: span 2;
-}
-
-.btn-record:not(:disabled):hover { background: #f0f8f3; }
-
 button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
 
 /* Status */
@@ -502,7 +492,6 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
       <button class="btn-speak" id="speak">▶ Speak</button>
       <button class="btn-stop" id="stop" disabled>⏹ Stop</button>
       <button class="btn-pause" id="pause" disabled>⏸ Pause</button>
-      <button class="btn-record" id="record" onclick="showSaveTip()">💡 Save Audio Tip</button>
     </div>
   </div>
 
@@ -533,10 +522,8 @@ const progressFill = document.getElementById('progressFill');
 const speakBtn = document.getElementById('speak');
 const stopBtn = document.getElementById('stop');
 const pauseBtn = document.getElementById('pause');
-const recordBtn = document.getElementById('record');
 
 let voices = [];
-let isRecording = false;
 
 function setStatus(text, state = '') {
   statusEl.textContent = text;
@@ -662,8 +649,6 @@ stopBtn.onclick = () => {
   resetUI();
   setStatus('Stopped');
 };
-
-
 
 rateEl.oninput = () => document.getElementById('rateVal').textContent = rateEl.value + '×';
 pitchEl.oninput = () => document.getElementById('pitchVal').textContent = pitchEl.value;
