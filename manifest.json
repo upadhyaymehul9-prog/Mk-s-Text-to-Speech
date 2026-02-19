@@ -1,7 +1,7 @@
 {
   "id": "mehul-tts",
-  "name": "Mehul's Text to Speech",
-  "short_name": "TTS India",
+  "name": "Text-to-Speech",
+  "short_name": "TTS",
   "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
