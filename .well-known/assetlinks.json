@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.upadhyaymehul9prog.tts",
+        "sha256_cert_fingerprints": ["4A:78:C7:D9:BE:13:B7:DD:91:93:71:1C:46:F9:90:A4:1D:16:18:74:42:A2:95:E4:59:DF:C5:09:C5:E2:B3:C8"]
+      }
+    }]
