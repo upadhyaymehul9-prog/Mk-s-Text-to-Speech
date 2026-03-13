@@ -47,7 +47,6 @@ body {
   position: relative;
 }
 
-/* Decorative top bar */
 .top-rule {
   height: 4px;
   background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
@@ -55,7 +54,6 @@ body {
   margin-bottom: 24px;
 }
 
-/* Header */
 .masthead {
   text-align: center;
   padding-bottom: 20px;
@@ -94,9 +92,7 @@ body {
   letter-spacing: -0.5px;
 }
 
-.masthead h1 span {
-  color: var(--gold);
-}
+.masthead h1 span { color: var(--gold); }
 
 .masthead .tagline {
   font-size: 12px;
@@ -106,7 +102,6 @@ body {
   font-family: 'Playfair Display', serif;
 }
 
-/* Card */
 .card {
   background: white;
   border: 1px solid var(--border);
@@ -138,7 +133,7 @@ body {
 
 textarea {
   width: 100%;
-  height: 200px;
+  height: 180px;
   border: 1px solid var(--border);
   border-radius: 3px;
   padding: 14px;
@@ -162,19 +157,85 @@ textarea::placeholder {
   font-style: italic;
 }
 
-.char-count {
-  text-align: right;
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  color: var(--muted);
+/* Count row */
+.count-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 6px;
 }
 
-/* Controls */
-.control-row {
-  margin-bottom: 16px;
+.char-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
 }
 
+.char-count.warn { color: var(--rust); }
+
+/* Text action buttons */
+.text-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn-text-action {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-text-action:hover { background: white; color: var(--ink); border-color: var(--gold); }
+.btn-text-action.copied { color: var(--sage); border-color: var(--sage); }
+
+/* Recent texts */
+.recent-section {
+  margin-top: 12px;
+}
+
+.recent-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.recent-item {
+  padding: 8px 10px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 12px;
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.recent-item:hover { border-color: var(--gold); background: white; }
+
+.control-row { margin-bottom: 16px; }
 .control-row:last-child { margin-bottom: 0; }
 
 .control-label {
@@ -189,10 +250,7 @@ textarea::placeholder {
   align-items: center;
 }
 
-.control-value {
-  color: var(--gold);
-  font-weight: 500;
-}
+.control-value { color: var(--gold); font-weight: 500; }
 
 select {
   width: 100%;
@@ -214,7 +272,6 @@ select {
 
 select:focus { outline: none; border-color: var(--gold); }
 
-/* Sliders */
 .slider-track {
   position: relative;
   height: 32px;
@@ -246,12 +303,10 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.2); cursor: grabbing; }
 input[type="range"]:focus { outline: none; }
 
-/* Buttons */
 .buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 0;
 }
 
 button {
@@ -314,7 +369,6 @@ button:not(:disabled):hover::after { transform: scaleX(1); }
 
 button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
 
-/* Status */
 .status-card {
   background: var(--paper);
   border: 1px solid var(--border);
@@ -335,7 +389,6 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
 }
 
 .status-dot.speaking { background: var(--sage); box-shadow: 0 0 0 3px rgba(74,124,89,0.2); animation: pulse 1.2s infinite; }
-.status-dot.recording { background: var(--rust); box-shadow: 0 0 0 3px rgba(192,57,43,0.2); animation: pulse 0.8s infinite; }
 .status-dot.done { background: var(--gold); }
 
 .status-text {
@@ -348,9 +401,7 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
 }
 
 .status-text.speaking { color: var(--sage); }
-.status-text.recording { color: var(--rust); }
 
-/* Progress */
 .progress-bar {
   height: 2px;
   background: var(--border);
@@ -369,7 +420,6 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
   transition: width 0.3s ease;
 }
 
-/* Offline badge */
 .offline-badge {
   position: fixed;
   top: 12px;
@@ -388,7 +438,6 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
 
 .offline-badge.show { display: block; }
 
-/* Footer */
 .footer {
   text-align: center;
   margin-top: 20px;
@@ -405,22 +454,11 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
 
 .footer span { color: var(--gold); opacity: 0.5; }
 
-/* Divider ornament */
-.ornament {
-  text-align: center;
-  color: var(--gold-light);
-  font-size: 14px;
-  letter-spacing: 6px;
-  margin: 4px 0;
-  opacity: 0.7;
-}
-
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
 
-/* Entry animation */
 .container { animation: fadeUp 0.5s ease both; }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
@@ -445,7 +483,21 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; 
   <div class="card">
     <div class="card-label">Compose</div>
     <textarea id="text" placeholder="Type in English, हिंदी, or ગુજરાતી…"></textarea>
-    <div class="char-count" id="charCount">0 chars</div>
+
+    <div class="count-row">
+      <span class="char-count" id="charCount">0 chars · 0 words</span>
+    </div>
+
+    <div class="text-actions">
+      <button class="btn-text-action" id="clearBtn">✕ Clear</button>
+      <button class="btn-text-action" id="copyBtn">⎘ Copy</button>
+    </div>
+
+    <!-- Recent Texts -->
+    <div class="recent-section" id="recentSection" style="display:none;">
+      <div class="recent-label">Recent</div>
+      <div class="recent-list" id="recentList"></div>
+    </div>
   </div>
 
   <!-- Voice & Controls -->
@@ -522,15 +574,64 @@ const progressFill = document.getElementById('progressFill');
 const speakBtn = document.getElementById('speak');
 const stopBtn = document.getElementById('stop');
 const pauseBtn = document.getElementById('pause');
+const clearBtn = document.getElementById('clearBtn');
+const copyBtn = document.getElementById('copyBtn');
 
 let voices = [];
 
+// ── Recent texts ──────────────────────────────────────────
+const MAX_RECENT = 3;
+
+function getRecent() {
+  try { return JSON.parse(localStorage.getItem('tts_recent') || '[]'); } catch { return []; }
+}
+
+function saveRecent(text) {
+  let recent = getRecent().filter(t => t !== text);
+  recent.unshift(text);
+  recent = recent.slice(0, MAX_RECENT);
+  try { localStorage.setItem('tts_recent', JSON.stringify(recent)); } catch {}
+  renderRecent();
+}
+
+function renderRecent() {
+  const recent = getRecent();
+  const section = document.getElementById('recentSection');
+  const list = document.getElementById('recentList');
+  if (!recent.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = '';
+  recent.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'recent-item';
+    div.textContent = t.length > 60 ? t.slice(0, 60) + '…' : t;
+    div.title = t;
+    div.onclick = () => {
+      textEl.value = t;
+      updateCount();
+    };
+    list.appendChild(div);
+  });
+}
+
+// ── Count ──────────────────────────────────────────────────
+function updateCount() {
+  const t = textEl.value;
+  const chars = t.length;
+  const words = t.trim() ? t.trim().split(/\s+/).length : 0;
+  const el = document.getElementById('charCount');
+  el.textContent = `${chars} chars · ${words} words`;
+  el.className = 'char-count' + (chars > 500 ? ' warn' : '');
+}
+
+// ── Status ─────────────────────────────────────────────────
 function setStatus(text, state = '') {
   statusEl.textContent = text;
   statusEl.className = 'status-text ' + state;
   statusDot.className = 'status-dot ' + state;
 }
 
+// ── Voices ─────────────────────────────────────────────────
 function loadVoices() {
   const prev = voiceSel.value;
   voices = synth.getVoices();
@@ -558,8 +659,6 @@ function loadVoices() {
     voiceSel.appendChild(og);
   });
   if (prev && voices.some(v => v.name === prev)) voiceSel.value = prev;
-
-  // Show/hide Gujarati missing-voice tip
   const hasGujarati = voices.some(v => v.lang.toLowerCase().startsWith('gu') || v.name.toLowerCase().includes('gujarati'));
   const tip = document.getElementById('gujaratiTip');
   if (tip) tip.style.display = hasGujarati ? 'none' : 'block';
@@ -588,11 +687,13 @@ function resetUI() {
   setStatus('Ready');
 }
 
+// ── Speak ──────────────────────────────────────────────────
 speakBtn.onclick = () => {
   const t = textEl.value.trim();
   if (!t) { setStatus('Enter text first'); return; }
   synth.cancel();
   resetUI();
+  saveRecent(t);
 
   const u = new SpeechSynthesisUtterance(t);
   u.voice = voiceSel.value ? voices.find(v => v.name === voiceSel.value) : bestVoice(detectLang(t));
@@ -617,20 +718,13 @@ speakBtn.onclick = () => {
     }
   };
 
-  u.onend = () => {
-    resetUI();
-    setStatus('Done', 'done');
-    window.dispatchEvent(new Event('speechDone'));
-  };
-
-  u.onerror = () => {
-    resetUI();
-    setStatus('Error');
-  };
+  u.onend = () => { resetUI(); setStatus('Done', 'done'); };
+  u.onerror = () => { resetUI(); setStatus('Error'); };
 
   synth.speak(u);
 };
 
+// ── Pause / Stop ───────────────────────────────────────────
 pauseBtn.onclick = () => {
   if (!synth.speaking) return;
   if (synth.paused) {
@@ -644,16 +738,39 @@ pauseBtn.onclick = () => {
   }
 };
 
-stopBtn.onclick = () => {
-  synth.cancel();
-  resetUI();
-  setStatus('Stopped');
+stopBtn.onclick = () => { synth.cancel(); resetUI(); setStatus('Stopped'); };
+
+// ── Clear ──────────────────────────────────────────────────
+clearBtn.onclick = () => {
+  textEl.value = '';
+  updateCount();
+  textEl.focus();
 };
 
+// ── Copy ───────────────────────────────────────────────────
+copyBtn.onclick = () => {
+  const t = textEl.value;
+  if (!t) return;
+  navigator.clipboard.writeText(t).then(() => {
+    copyBtn.textContent = '✓ Copied';
+    copyBtn.classList.add('copied');
+    setTimeout(() => {
+      copyBtn.textContent = '⎘ Copy';
+      copyBtn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    // Fallback
+    textEl.select();
+    document.execCommand('copy');
+  });
+};
+
+// ── Sliders ────────────────────────────────────────────────
 rateEl.oninput = () => document.getElementById('rateVal').textContent = rateEl.value + '×';
 pitchEl.oninput = () => document.getElementById('pitchVal').textContent = pitchEl.value;
-textEl.oninput = () => document.getElementById('charCount').textContent = textEl.value.length + ' chars';
+textEl.oninput = updateCount;
 
+// ── Offline ────────────────────────────────────────────────
 const offline = document.getElementById('offline');
 window.addEventListener('online', () => offline.classList.remove('show'));
 window.addEventListener('offline', () => offline.classList.add('show'));
@@ -662,6 +779,9 @@ if (!navigator.onLine) offline.classList.add('show');
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
+
+// Init
+renderRecent();
 </script>
 </body>
 </html>
